@@ -1,72 +1,113 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const bcrypt = require('bcrypt');
+const fs = require('fs');
 
 const app = express();
 const PORT = 3000;
 
+// Middleware
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+app.use(express.static('public'));
 
-// Landing page
+// Landing page route
 app.get('/', (req, res) => {
   res.sendFile(__dirname + '/public/index.html');
 });
 
-// Internal area
+// Registration route
+app.post('/register', (req, res) => {
+  const { email, password } = req.body;
+
+  // Read existing user data from the JSON file
+  const userData = getUsersData();
+
+  // Check if the email is already registered
+  const existingUser = userData.find((user) => user.email === email);
+  if (existingUser) {
+    return res.status(400).send('Email already registered');
+  }
+
+
+  // Create a new user object
+  const newUser = { email, password };
+
+  // Add the new user to the user data
+  userData.push(newUser);
+
+  // Save the updated user data to the JSON file
+  saveUsersData(userData);
+  res.send('Registered successfully');
+  //res.redirect('/');
+});
+
+// Login route
+app.post('/login', (req, res) => {
+  const { email, password } = req.body;
+
+  // Read the user data from the JSON file
+  const userData = getUsersData();
+
+  // Check if the user exists and the password is correct
+  const user = userData.find((user) => user.email === email && user.password === password);
+
+  if (user) {
+    // Successful login, redirect to the internal area
+    res.redirect('/internal');
+  } else {
+    // Failed login, redirect back to the landing page
+    res.redirect('/');
+  }
+});
+
+// Internal area route
 app.get('/internal', (req, res) => {
   res.sendFile(__dirname + '/public/internal.html');
 });
 
-// Authentication
-const users = [];
+// Update data route
+app.post('/update', (req, res) => {
+  const {email, password, newPassword } = req.body;
 
-app.post('/register', async (req, res) => {
-  try {
-    const { username, password } = req.body;
+  // Read the user data from the JSON file
+  const userData = getUsersData();
 
-    // Check if username is already taken
-    if (users.find(user => user.username === username)) {
-      return res.status(409).json({ message: 'Username already taken' });
+  // Find the user by email
+  const user = userData.find((user) => user.email === email);
+
+  if (user) {
+    // Check if the provided password is correct
+    if (user.password !== password) {
+      return res.status(401).send('Invalid email or password');
     }
 
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    
 
-    // Save the user to the storage
-    users.push({ username, password: hashedPassword });
+    // Update the user's password
+    if (newPassword) {
+      user.password = newPassword;
+    }
 
-    res.status(201).json({ message: 'Registration successful' });
-  } catch (error) {
-    res.status(500).json({ message: 'Internal server error' });
+    // Save the updated user data to the JSON file
+    saveUsersData(userData);
+
+    res.send('Data updated successfully');
+  } else {
+    res.status(400).send('User not found');
   }
 });
 
-app.post('/login', async (req, res) => {
-  try {
-    const { username, password } = req.body;
 
-    // Find the user in the storage
-    const user = users.find(user => user.username === username);
 
-    // Check if user exists
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
+// Helper functions
+function getUsersData() {
+  const rawData = fs.readFileSync('users.json', 'utf8');
+  return JSON.parse(rawData);
+}
 
-    // Compare the provided password with the stored hashed password
-    const passwordMatch = await bcrypt.compare(password, user.password);
-
-    // Check if password is correct
-    if (!passwordMatch) {
-      return res.status(401).json({ message: 'Incorrect password' });
-    }
-
-    res.status(200).json({ message: 'Login successful' });
-  } catch (error) {
-    res.status(500).json({ message: 'Internal server error' });
-  }
-});
+function saveUsersData(data) {
+  fs.writeFileSync('users.json', JSON.stringify(data));
+}
 
 // Start the server
 app.listen(PORT, () => {

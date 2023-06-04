@@ -1,20 +1,62 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <title>Landing Page</title>
-</head>
-<body>
-  <h1>Welcome to the Landing Page</h1>
-  <form action="/register" method="POST">
-    <input type="text" name="username" placeholder="Username" required><br>
-    <input type="password" name="password" placeholder="Password" required><br>
-    <button type="submit">Register</button>
-  </form>
-  <br>
-  <form action="/login" method="POST">
-    <input type="text" name="username" placeholder="Username" required><br>
-    <input type="password" name="password" placeholder="Password" required><br>
-    <button type="submit">Login</button>
-  </form>
-</body>
+  <head>
+    <title>Landing Page</title>
+    <link rel="stylesheet" type="text/css" href="https://stackpath.bootstrapcdn.com/bootstrap/5.0.0-alpha2/css/bootstrap.min.css">
+  </head>
+  <body>
+   
+    <div class="container" style="width:500px; margin:0 auto;">
+      <h1>Landing Page</h1>
+      <form action="/register" method="POST" class="needs-validation" novalidate>
+        <div class="mb-3">
+          <label for="email" class="form-label">Email:</label>
+          <input type="email" name="email" class="form-control" required style="width: 300px;">
+          <div class="invalid-feedback">Please enter a valid email address.</div>
+        </div>
+        <div class="mb-3">
+          <label for="password" class="form-label">Password:</label>
+          <input type="password" name="password" class="form-control" required style="width: 300px;">
+          <div class="invalid-feedback">Please enter a password.</div>
+        </div>
+        <button type="submit" class="btn btn-primary">Register</button>
+      </form>
+      <br>
+      <form action="/login" method="POST" class="needs-validation" novalidate>
+        <div class="mb-3">
+          <label for="email" class="form-label">Email:</label>
+          <input type="email" name="email" class="form-control" required style="width: 300px;">
+          <div class="invalid-feedback">Please enter a valid email address.</div>
+        </div>
+        <div class="mb-3">
+          <label for="password" class="form-label">Password:</label>
+          <input type="password" name="password" class="form-control" required style="width: 300px;">
+          <div class="invalid-feedback">Please enter a password.</div>
+        </div>
+        <button type="submit" class="btn btn-primary">Log in</button>
+      </form>
+    </div>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.0.0-alpha2/js/bootstrap.bundle.min.js"></script>
+    <script>
+      // Form validation
+      (function () {
+        'use strict';
+
+        // Fetch all the forms we want to apply custom Bootstrap validation styles to
+        var forms = document.querySelectorAll('.needs-validation');
+
+        // Loop over them and prevent submission
+        Array.prototype.slice.call(forms).forEach(function (form) {
+          form.addEventListener('submit', function (event) {
+            if (!form.checkValidity()) {
+              event.preventDefault();
+              event.stopPropagation();
+            }
+
+            form.classList.add('was-validated');
+          }, false);
+        });
+      })();
+    </script>
+  </body>
 </html>
